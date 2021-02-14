@@ -22,6 +22,8 @@ fn getting_started_test() {
             .path("/translate")
             //.query_param_new("word", url_encoded("peter"))
             .query_param_new("word", &x)
+            .query_param_new("word", &a)
+            .query_param_new("word", a)
             .query_param_new("word", x)
             .query_param_new("peter", "griffin".url_encoded());
         then.status(200)
