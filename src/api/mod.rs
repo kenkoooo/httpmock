@@ -5,7 +5,7 @@ pub use adapter::{
     local::LocalMockServerAdapter, standalone::RemoteMockServerAdapter, Method, MockServerAdapter,
     Regex,
 };
-pub use encoding::{StringValue, URLEncodedExtension};
+pub use encoding::{MaybeEncoded, URLEncodedExtension, url_encoded};
 pub use mock::{Mock, MockRef, MockRefExt};
 
 mod adapter;

@@ -206,11 +206,11 @@ use tokio::task::LocalSet;
 use tokio::time::Duration;
 
 use api::MockServerAdapter;
-pub use api::URLEncodedExtension;
+pub use {api::URLEncodedExtension, api::url_encoded};
 pub use data::{HttpMockRequest, MockMatcherFunction};
 use util::Join;
 
-use crate::api::{LocalMockServerAdapter, StringValue, RemoteMockServerAdapter};
+use crate::api::{LocalMockServerAdapter, MaybeEncoded, RemoteMockServerAdapter};
 pub use crate::api::{Method, Mock, MockRef, MockRefExt, Regex};
 use crate::server::{start_server, MockServerState};
 use crate::util::{read_env, with_retry};
@@ -616,7 +616,7 @@ impl When {
         self
     }
 
-    pub fn query_param_new<S1: Into<StringValue>, S2: Into<StringValue>>(self, name: S1, value: S2) -> Self {
+    pub fn query_param_new<S1: Into<MaybeEncoded<String>>, S2: Into<MaybeEncoded<String>>>(self, name: S1, value: S2) -> Self {
         self
     }
 

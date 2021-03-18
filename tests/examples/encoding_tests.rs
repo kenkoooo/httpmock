@@ -3,7 +3,7 @@ extern crate httpmock;
 use isahc::{get, get_async};
 use serde_json::json;
 
-use self::httpmock::URLEncodedExtension;
+use self::httpmock::{URLEncodedExtension, url_encoded};
 use httpmock::Method::{GET, POST};
 use httpmock::{Mock, MockServer};
 
@@ -12,15 +12,16 @@ fn getting_started_test() {
     // Start a lightweight mock server.
     let server = MockServer::start();
 
-    let a = String::new();
-
-    let x = a.url_encoded();
+    let v1 = String::from("myQueryValue1");
+    let a =  String::from("myQueryValue2");;
+    let x =  a.url_encoded();
 
     // Create a mock on the server.
     let hello_mock = server.mock(|when, then| {
         when.method("GET")
             .path("/translate")
-            //.query_param_new("word", url_encoded("peter"))
+            .query_param_new("word", url_encoded(&v1))
+            .query_param_new("word", url_encoded(v1))
             .query_param_new("word", &x)
             .query_param_new("word", &a)
             .query_param_new("word", a)

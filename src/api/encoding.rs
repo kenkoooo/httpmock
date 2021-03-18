@@ -11,23 +11,23 @@ enum Encoding {
 /// **Attention**: The end user must not use this type directly! Instead, use normal String, &str,
 /// or anything else that can be converted into a String. httpmock already comes with automatic
 /// conversions from string like types to StringValue on all methods that require it!
-pub struct StringValue {
-    value: String,
+pub struct MaybeEncoded<T> {
+    value: T,
     encoding: Option<Encoding>,
 }
 
-impl<T: Into<String>> From<T> for StringValue {
+impl<T: Into<String>> From<T> for MaybeEncoded<String> {
     fn from(value: T) -> Self {
-        StringValue {
+        MaybeEncoded {
             value: value.into(),
             encoding: None,
         }
     }
 }
 
-impl Into<StringValue> for &StringValue {
-    fn into(self) -> StringValue {
-        StringValue {
+impl Into<MaybeEncoded<String>> for &MaybeEncoded<String> {
+    fn into(self) -> MaybeEncoded<String> {
+        MaybeEncoded {
             value: self.value.to_string(),
             encoding: self.encoding.clone(),
         }
@@ -37,15 +37,19 @@ impl Into<StringValue> for &StringValue {
 // ************************************************************************************
 // The following methods provide url encoding for StringValue instances.
 // ************************************************************************************
-pub trait URLEncodedExtension {
-    fn url_encoded(&self) -> StringValue;
+pub trait URLEncodedExtension<T> {
+    fn url_encoded(&self) -> MaybeEncoded<T>;
 }
 
-impl<T: ToString> URLEncodedExtension for T {
-    fn url_encoded(&self) -> StringValue {
-        StringValue {
-            value: self.to_string(),
-            encoding: Some(Encoding::URL),
-        }
+impl<T: ToString> URLEncodedExtension<String> for T {
+    fn url_encoded(&self) -> MaybeEncoded<String> {
+        url_encoded(self.to_string())
+    }
+}
+
+pub fn url_encoded<S, T: Into<S>>(value: T) ->  MaybeEncoded<S> {
+    MaybeEncoded {
+        value: value.into(),
+        encoding: Some(Encoding::URL),
     }
 }
