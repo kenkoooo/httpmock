@@ -3,11 +3,9 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use isahc::Request;
+use hyper::{Body, Method, Request};
 
-use crate::api::adapter::{
-    build_http_client, execute_request, http_ping, InternalHttpClient, MockServerAdapter,
-};
+use crate::api::adapter::{InternalHttpClient, MockServerAdapter};
 use crate::common::data::{ActiveMock, ClosestMatch, MockDefinition, MockRef, RequestRequirements};
 
 #[derive(Debug)]
@@ -20,7 +18,7 @@ impl RemoteMockServerAdapter {
     pub fn new(addr: SocketAddr) -> Self {
         Self {
             addr,
-            http_client: build_http_client(),
+            http_client: InternalHttpClient::new(),
         }
     }
 
@@ -61,13 +59,13 @@ impl MockServerAdapter for RemoteMockServerAdapter {
         // Send the request to the mock server
         let request_url = format!("http://{}/__httpmock__/mocks", &self.address());
         let request = Request::builder()
-            .method("POST")
+            .method(Method::POST)
             .uri(request_url)
             .header("content-type", "application/json")
-            .body(json)
+            .body(Body::from(json))
             .unwrap();
 
-        let (status, body) = match execute_request(request, &self.http_client).await {
+        let (status, body) = match self.http_client.execute_request(request).await {
             Err(err) => return Err(format!("cannot send request to mock server: {}", err)),
             Ok(sb) => sb,
         };
@@ -93,12 +91,12 @@ impl MockServerAdapter for RemoteMockServerAdapter {
         // Send the request to the mock server
         let request_url = format!("http://{}/__httpmock__/mocks/{}", &self.address(), mock_id);
         let request = Request::builder()
-            .method("GET")
+            .method(Method::GET)
             .uri(request_url)
-            .body("".to_string())
+            .body(Body::from(""))
             .unwrap();
 
-        let (status, body) = match execute_request(request, &self.http_client).await {
+        let (status, body) = match self.http_client.execute_request(request).await {
             Err(err) => return Err(format!("Cannot send request to mock server: {}", err)),
             Ok(r) => r,
         };
@@ -124,12 +122,12 @@ impl MockServerAdapter for RemoteMockServerAdapter {
         // Send the request to the mock server
         let request_url = format!("http://{}/__httpmock__/mocks/{}", &self.address(), mock_id);
         let request = Request::builder()
-            .method("DELETE")
+            .method(Method::DELETE)
             .uri(request_url)
-            .body("".to_string())
+            .body(Body::from(""))
             .unwrap();
 
-        let (status, body) = match execute_request(request, &self.http_client).await {
+        let (status, body) = match self.http_client.execute_request(request).await {
             Err(err) => return Err(format!("Cannot send request to mock server: {}", err)),
             Ok(sb) => sb,
         };
@@ -149,12 +147,12 @@ impl MockServerAdapter for RemoteMockServerAdapter {
         // Send the request to the mock server
         let request_url = format!("http://{}/__httpmock__/mocks", &self.address());
         let request = Request::builder()
-            .method("DELETE")
+            .method(Method::DELETE)
             .uri(request_url)
-            .body("".to_string())
+            .body(Body::from(""))
             .unwrap();
 
-        let (status, body) = match execute_request(request, &self.http_client).await {
+        let (status, body) = match self.http_client.execute_request(request).await {
             Err(err) => return Err(format!("Cannot send request to mock server: {}", err)),
             Ok(sb) => sb,
         };
@@ -180,13 +178,13 @@ impl MockServerAdapter for RemoteMockServerAdapter {
         // Send the request to the mock server
         let request_url = format!("http://{}/__httpmock__/verify", &self.address());
         let request = Request::builder()
-            .method("POST")
+            .method(Method::POST)
             .uri(request_url)
             .header("content-type", "application/json")
-            .body(json)
+            .body(Body::from(json))
             .unwrap();
 
-        let (status, body) = match execute_request(request, &self.http_client).await {
+        let (status, body) = match self.http_client.execute_request(request).await {
             Err(err) => return Err(format!("Cannot send request to mock server: {}", err)),
             Ok(sb) => sb,
         };
@@ -216,12 +214,12 @@ impl MockServerAdapter for RemoteMockServerAdapter {
         // Send the request to the mock server
         let request_url = format!("http://{}/__httpmock__/history", &self.address());
         let request = Request::builder()
-            .method("DELETE")
+            .method(Method::DELETE)
             .uri(request_url)
-            .body("".to_string())
+            .body(Body::from(""))
             .unwrap();
 
-        let (status, body) = match execute_request(request, &self.http_client).await {
+        let (status, body) = match self.http_client.execute_request(request).await {
             Err(err) => return Err(format!("Cannot send request to mock server: {}", err)),
             Ok(sb) => sb,
         };
@@ -238,6 +236,6 @@ impl MockServerAdapter for RemoteMockServerAdapter {
     }
 
     async fn ping(&self) -> Result<(), String> {
-        http_ping(&self.addr, self.http_client.borrow()).await
+        self.http_client.http_ping(&self.addr).await
     }
 }
