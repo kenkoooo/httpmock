@@ -56,12 +56,11 @@ colored = "2.0"
 ureq = "2.3"
 
 [features]
-default = ["cookies", "isahc-client"]
+default = ["cookies", "isahc"]
 standalone = ["clap", "env_logger", "serde_yaml"]
 color = ["colored"]
 cookies = ["basic-cookies"]
 hyper-client = ["hyper/client"]
-isahc-client = ["isahc"]
 
 [[bin]]
 name = "httpmock"

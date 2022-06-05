@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 
-use crate::api::adapter::{InternalHttpClient, MockServerAdapter};
+use crate::api::adapter::{build_http_client, http_ping, InternalHttpClient, MockServerAdapter};
 use crate::common::data::{ActiveMock, ClosestMatch, MockDefinition, MockRef, RequestRequirements};
 use crate::server::web::handlers::{
     add_new_mock, delete_all_mocks, delete_history, delete_one_mock, read_one_mock, verify,
@@ -21,7 +21,7 @@ pub struct LocalMockServerAdapter {
 
 impl LocalMockServerAdapter {
     pub fn new(addr: SocketAddr, local_state: Arc<MockServerState>) -> Self {
-        let client = InternalHttpClient::new();
+        let client = build_http_client();
         LocalMockServerAdapter {
             addr,
             local_state,
@@ -80,6 +80,6 @@ impl MockServerAdapter for LocalMockServerAdapter {
     }
 
     async fn ping(&self) -> Result<(), String> {
-        self.client.http_ping(&self.addr).await
+        http_ping(&self.addr, self.client.borrow()).await
     }
 }
